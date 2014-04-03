@@ -5,10 +5,75 @@ author: colah
 mathjax: on
 ---
 
-Visualization of tanh Layers
------------------------------
+Recently, there's been a great deal of excitement and interest in deep neural networks because they've acheived breakthrough results in areas such as computer vision.[^breakthroughs]
 
-As you know, a tanh layer $σ(Ax+b)$ consists of:
+[^breakthroughs]: This seems to have really kicked off with [Krizhevsky *et al.*, (2012)](http://www.cs.toronto.edu/~fritz/absps/imagenet.pdf), who put together a lot of different pieces to achieve outstanding results. Since then there's been a lot of other exciting work.
+
+However, there remain a number of concerns about them. One is that it can be quite challenging to understand *what* a neural network is really doing. If one trains it well, it achieves high quality results, but it is challenging to understand how it is doing so. If the network fails, it is hard to understand what went wrong.
+
+While it is challenging to understand the behavior of deep neural networks in general, it turns out to be much easier to explore low-dimensional deep neural networks -- networks that only have a few neurons in each layer. In fact, we can create visualizations to completely understand the behavior and training of such networks. This perspective will allow us to gain deeper intuition about the behavior of neural networks observe a connection linking neural networks to an area of mathematics called topology.
+
+A number of interesting things follow from this, including fundamental lower-bounds on the complexity of a neural network capable of classifying certain datasets.
+
+A Simple Example
+----------------
+
+Let's begin with a very simple dataset, two curves on a plane. The network will learn to classify points as belonging to one or the other.
+
+<div class="centerimgcontainer">
+<img src="img/simple2_data.png" alt="" style="">
+</div>
+<div class="spaceafterimg"></div>
+
+The obvious way to visualize the behavior of a neural network -- or any machine learning algorithm, for that matter --'s behavior is to simply look at how it classifies every possible data point.
+
+We'll start with the simplest possible class of neural network, one with only an input layer and an output layer. Such a network simply tries to separate the two classes of data by dividing them with a line.
+
+<div class="centerimgcontainer">
+<img src="img/simple2_linear.png" alt="" style="">
+</div>
+<div class="spaceafterimg"></div>
+
+That sort of network isn't very interesting. Modern neural networks generally have multiple layers between their input and output, called "hidden" layers. At the very least, they have one.
+
+<div class="centerimgcontainer">
+<img src="img/example_network.svg" alt="" style="">
+<div class="caption">Diagram of a simple network from Wikipedia</div>
+</div>
+<div class="spaceafterimg"></div>
+
+As before, we can visualize the behavior of this network by looking at what it does to different points in its domain. It separates the data with a more complicated curve than a line. 
+
+<div class="centerimgcontainer">
+<img src="img/simple2_0.png" alt="" style="">
+</div>
+<div class="spaceafterimg"></div>
+
+With each layer, the network transforms the data, creating a new *representation*.[^rep] We can look at the data in each of these representations and how the network classifies them. When we get to the final representation, the network will just draw a line through the data (or, in higher dimensions, a hyper-plane).
+
+In the previous visualization, we looked at the data in its "raw" representation. You can think of that as us look at the input layer. Now we will look at it after it is transformed by the first layer. You can think of this as us looking at the hidden layer.
+
+Each dimension corresponds to the firing of a neuron in the layer.
+
+[^rep]: These representations, hopefully, make the data "nicer" for the network to classify. There has been a lot of work exploring representations recently. Perhaps the most fascinating has been in Natural Language Processing: the representations we learn of words, called word embeddings, have interesting properties. See [Mikolov *et al.*, (2013)](http://research.microsoft.com/pubs/189726/rvecs.pdf) and, more broadly, everything [Richard Socher](http://www.socher.org/) has ever done.
+
+<div class="centerimgcontainer">
+<img src="img/simple2_1.png" alt="" style="">
+<div class="caption">The hidden layer learns a representation so that the data is linearly seperable</div>
+</div>
+<div class="spaceafterimg"></div>
+
+
+
+
+Continuous Visualization of Layers
+-----------------------------------
+
+In the approach outlined in the previous section, we learn to understand networks by looking at the representation corresponding to each layer. This gives us a discrete list of representations.
+
+The tricky part is in understanding how we go from one to another. Thankfully, neural network layers have nice properties that make this very easy.
+
+There are a variety of different kinds of layers used in neural networks. We will talk about tanh layers for a concrete example. A tanh layer $\tanh(Ax+b)$ consists of:
 
 (1) A linear transformation by the matrix $A$
 (2) A translation by the vector $b$
@@ -16,18 +81,34 @@ As you know, a tanh layer $σ(Ax+b)$ consists of:
 
 We can visualize this as a continuous transformation, as follows:
 
-
 <div class="centerimgcontainer">
 <img src="img/1layer.gif" alt="Gradually applying a neural network layer" style="">
 </div>
 <div class="spaceafterimg"></div>
 
-The story is much the same for other activation functions.
+The story is much the same for other standard layers, that consist of an affine transformation followed by pointwise application of a monotone activation function.
+
+We can apply this technique to understand more complicated networks. For example, the following network classifies two spirals that are slightly entangled, using many layers.
+
+<div class="centerimgcontainer">
+<img src="img/spiral.1-2.2-2-2-2-2-2.gif" alt="" style="">
+</div>
+<div class="spaceafterimg"></div>
+
+And the following network fails to classify two spirals that are more entangled, using many layers.
+
+<div class="centerimgcontainer">
+<img src="img/spiral.2.2-2-2-2-2-2-2.gif" alt="" style="">
+</div>
+<div class="spaceafterimg"></div>
+
+It is worth explicitly noting here that these tasks are only somewhat challenging because we are using low-dimensional neural networks. If we were using wider networks, all this would be quite easy.
+
 
 Topology of tanh Layers
 ------------------------
 
-The layer stretches and squishes space, but it never cuts, breaks, or folds it. Intuitively, we can see that it preserves topological properties. For example, a set will be connected afterwards if it was before (and vice versa).
+Each layer stretches and squishes space, but it never cuts, breaks, or folds it. Intuitively, we can see that it preserves topological properties. For example, a set will be connected afterwards if it was before (and vice versa).
 
 Transformation like this, which don't affect topology, are called homeomorphisms in topology. Formally, they are bijections that are continuous functions both ways.
 
@@ -41,9 +122,7 @@ Transformation like this, which don't affect topology, are called homeomorphisms
 
 Thus, if W has a non-zero determinant, our layer is a homeomorphism. ∎
 
-It's actually a bit stronger than this. As our animation suggests, we can continuously deform from the identity function to the neural network layer. (Though we may need to permute two of the output dimensions.) This is very significant and we will discuss it later.
-
-These results also hold if we compose arbitrarily many of these layers together.
+This result continues to hold if we compose arbitrarily many of these layers together.
 
 
 Topology and Classification
@@ -59,16 +138,18 @@ Topology and Classification
 Consider a two dimensional dataset with two classes $A, B \subset \mathbb{R}^2$:
 
 $$A = \{x | d(x,0) < 1/3\}$$
+
 $$B = \{x | 2/3 < d(x,0) < 1\}$$
 
 **Claim**: It is impossible for a neural network to classify this dataset without having a layer that has 3 or more hidden units, regardless of depth.
 
-Classification with a sigmoid unit or a softmax layer would be equivalent to trying to find a hyperplane (or in this case a line) that separates $A$ and $B$. 
+As we discussed previously, classification with a sigmoid unit or a softmax layer would be equivalent to trying to find a hyperplane (or in this case a line) that separates $A$ and $B$.
 
 Unfortunately, with only two hidden units, a network is topologically doomed to failure on this dataset. We can watch it struggle and try to learn a way to do this:
 
 <div class="centerimgcontainer">
 <img src="img/topology_2D-2D_train.gif" alt="" style="">
+<div class="caption">For this network, hard work isn't enough.</div>
 </div>
 <div class="spaceafterimg"></div>
 
@@ -76,7 +157,7 @@ Unfortunately, with only two hidden units, a network is topologically doomed to 
 
 This example only had one hidden layer, but it would fail regardless.
 
-**Proof**: Either each layer is a homeomorphism, or the layer has determinant 0. If it is a homemorphism, A is still surrounded by B, and a line can't separate them. But suppose it has a determinant of 0: then the dataset gets collapsed on some axis. Since we're dealing with something homeomorphic to the original dataset, A is surrounded by B, and collapsing on any axis means we will have some points of A and B mix and become impossible to distinguish between.
+**Proof**: Either each layer is a homeomorphism, or the layer's weight matrix has determinant 0. If it is a homemorphism, A is still surrounded by B, and a line can't separate them. But suppose it has a determinant of 0: then the dataset gets collapsed on some axis. Since we're dealing with something homeomorphic to the original dataset, A is surrounded by B, and collapsing on any axis means we will have some points of A and B mix and become impossible to distinguish between. ∎
 
 If we add a third hidden unit, the problem becomes trivial. The neural network learns the following representation:
 
@@ -90,7 +171,14 @@ With this representation, we can separate the datasets with a hyperplane.
 
 To get a better sense of what's going on, let's consider an even simpler dataset that's 1-dimensional:
 
+<div class="floatrightimgcontainer">
+<img src="img/topology_1d.png" alt="" style="">
+</div>
+<div class="spaceafterimg"></div>
+
+
 $$A = [-\frac{1}{3}, \frac{1}{3}]$$
+
 $$B = [-1, -\frac{2}{3}] \cup [\frac{2}{3}, 1]$$
 
 Without using a layer of two or more hidden units, you can't classify this dataset. But if you use one with two units, we learn to represent the data as a nice curve that allows us to separate the data:
@@ -109,7 +197,10 @@ The Manifold Hypothesis
 
 Is this relevant to real world data sets, like image data? If you take the manifold hypothesis really seriously, I think it bares consideration.
 
-The manifold hypothesis is that natural data forms lower-dimensional manifolds in its embedding space. If you believe this, then the task of a classification algorithm is fundamentally to separate a bunch of tangled manifolds.
+The manifold hypothesis is that natural data forms lower-dimensional manifolds in its embedding space. There are both theoretical[^theor] and experimental[^expir] reasons to believe this to be true. If you believe this, then the task of a classification algorithm is fundamentally to separate a bunch of tangled manifolds.
+
+[^theor]: A lot of the natural transformations you might want to perform on an image, like translating or scaling an object in it, or changing the lighting, would form continuous curves in image space if you performed them continuously.
+[^expir]: [Carlsson *et al.*](http://comptop.stanford.edu/u/preprints/mumford.pdf) found that local patches of images form a klein bottle. 
 
 In the previous examples, one class completely surrounded another. It doesn't seem very likely that the dog image manifold is completely surrounded by the cat image manifold. But there are other, more plausible topological situations that could still pose an issue, as we will see in the next section.
 
