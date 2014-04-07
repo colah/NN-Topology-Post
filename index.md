@@ -3,9 +3,10 @@ title: Neural Networks, Manifolds, and Topology
 date: 2014-03-25
 author: colah
 mathjax: on
+tags: topology, neural networks, deep learning, manifold hypothesis
 ---
 
-Recently, there's been a great deal of excitement and interest in deep neural networks because they've acheived breakthrough results in areas such as computer vision.[^breakthroughs]
+Recently, there's been a great deal of excitement and interest in deep neural networks because they've achieved breakthrough results in areas such as computer vision.[^breakthroughs]
 
 [^breakthroughs]: This seems to have really kicked off with [Krizhevsky *et al.*, (2012)](http://www.cs.toronto.edu/~fritz/absps/imagenet.pdf), who put together a lot of different pieces to achieve outstanding results. Since then there's been a lot of other exciting work.
 
@@ -55,7 +56,7 @@ In the previous visualization, we looked at the data in its "raw" representation
 
 Each dimension corresponds to the firing of a neuron in the layer.
 
-[^rep]: These representations, hopefully, make the data "nicer" for the network to classify. There has been a lot of work exploring representations recently. Perhaps the most fascinating has been in Natural Language Processing: the representations we learn of words, called word embeddings, have interesting properties. See [Mikolov *et al.*, (2013)](http://research.microsoft.com/pubs/189726/rvecs.pdf) and, more broadly, everything [Richard Socher](http://www.socher.org/) has ever done.
+[^rep]: These representations, hopefully, make the data "nicer" for the network to classify. There has been a lot of work exploring representations recently. Perhaps the most fascinating has been in Natural Language Processing: the representations we learn of words, called word embeddings, have interesting properties. See [Mikolov *et al.* (2013)](http://research.microsoft.com/pubs/189726/rvecs.pdf), [Turian *et al.* (2010)](http://www.iro.umontreal.ca/~lisa/pointeurs/turian-wordrepresentations-acl10.pdf),  and, [Richard Socher's work](http://www.socher.org/). To give you a quick flavor, there is a [very nice visualization](http://metaoptimize.s3.amazonaws.com/cw-embeddings-ACL2010/embeddings-mostcommon.EMBEDDING_SIZE=50.png) associated with the Turian paper.
 
 <div class="centerimgcontainer">
 <img src="img/simple2_1.png" alt="" style="">
@@ -110,7 +111,7 @@ Topology of tanh Layers
 
 Each layer stretches and squishes space, but it never cuts, breaks, or folds it. Intuitively, we can see that it preserves topological properties. For example, a set will be connected afterwards if it was before (and vice versa).
 
-Transformation like this, which don't affect topology, are called homeomorphisms in topology. Formally, they are bijections that are continuous functions both ways.
+Transformation like this, which don't affect topology, are called homeomorphisms. Formally, they are bijections that are continuous functions both ways.
 
 **Theorem**: Layers with $N$ inputs and $N$ outputs are homeomorphisms, if $W$ is non-singular. (Though one needs to be careful about domain and range.)
 
@@ -202,7 +203,7 @@ The manifold hypothesis is that natural data forms lower-dimensional manifolds i
 [^theor]: A lot of the natural transformations you might want to perform on an image, like translating or scaling an object in it, or changing the lighting, would form continuous curves in image space if you performed them continuously.
 [^expir]: [Carlsson *et al.*](http://comptop.stanford.edu/u/preprints/mumford.pdf) found that local patches of images form a klein bottle. 
 
-In the previous examples, one class completely surrounded another. It doesn't seem very likely that the dog image manifold is completely surrounded by the cat image manifold. But there are other, more plausible topological situations that could still pose an issue, as we will see in the next section.
+In the previous examples, one class completely surrounded another. However, it doesn't seem very likely that the dog image manifold is completely surrounded by the cat image manifold. But there are other, more plausible topological situations that could still pose an issue, as we will see in the next section.
 
 Links And Homotopy
 ------------------
@@ -214,35 +215,63 @@ Another interesting dataset to consider is two linked tori, $A$ and $B$.
 </div>
 <div class="spaceafterimg"></div>
 
-
 Much like the previous datasets we considered, this dataset can't be separated without using $n+1$ dimensions, namely a $4$th dimension.
 
-Links are studied in knot theory, an area of topology. I don't know much about it, but there are higher dimensional links. It doesn't seem impossible that we could have some sort of similar situation in real world data.
+Links are studied in knot theory, an area of topology. Sometimes when you see a link, it isn't immediately obvious whether it's an unlink (a bunch of things that are tangled together, but can be separated by continuous deformation) or not.
 
-Sometimes when you see a link, it isn't immediately obvious whether it's an unlink (a bunch of things that are tangled together, but can be separated by continuous deformation) or not. 
+<div class="bigcenterimgcontainer">
+<img src="img/unlink-2spiral.png" alt="" style="">
+<div class="caption">A relatively simple unlink.</div>
+</div>
+<div class="spaceafterimg"></div>
 
-We observed earlier, in the first animation, that we can imagine continually deforming from the identity function to the neural net layer function. This is now of significant interest.
+If a neural network using layers with only 3 units can classify it, then it is an unlink. (Question: Can all unlinks be classified by a network with only 3 units, theoretically?)
 
-In topology, we would say that the layer is homotopic to the identity function. Formally, two continuous functions $f_0, f_1: X \to Y$ are homotopic if there exists a continuous function $F: X \times [0,1] \to Y$ such that $F(x, 0) = f_0(x)$, $F(x, 1) = f_1(x)$. That is, $F(x, t)$ continuously transitions from $f_0(x)$ to $f_1(x)$.
+From this knot perspective, our continuous visualization of the representations produced by a neural network isn't just a nice animation, it's a procedure for untangling links. In topology, we would call it an *ambient isotopy* between the original link and the separated ones.
 
-**Theorem**: A network layer is homotopic to the identity function if: a) W isn't singular, b) you are willing to permute the neurons in the hidden layer, c) there is more than 1 hidden unit, and d) you are careful about domains and ranges.
+Formally, an ambient isotopy is between manifolds $A$ and $B$ is a continuous function $F: [0,1] \times X \to Y$ such that each $F_t$ is a homeomorphism from $X$ to its range, $F_0$ is the identity function, and $F_1$ maps $A$ to $B$. That is, $F_t$ continuously transitions from mapping $A$ to itself to mapping $A$ to $B$.
+
+**Theorem**: There is an ambient isotopy between the input and a network layer's representation if: a) W isn't singular, b) you are willing to permute the neurons in the hidden layer, and c) there is more than 1 hidden unit.
 
 **Proof**: Again, we consider each stage of the network individually:
 
-(1) The linear transformation is, in fact, the hardest part. In order for this to be possible, we need $W$ to have a positive determinant. Our premise is that it isn't zero, and we can flip the sign if it is negative by switching two of the hidden neurons, so we can guarantee the determinant is positive. The space of positive determinant matrices is path-connected, so there exists $p: [0,1] -> GL_n(\mathbb{R})$ such that $p(0) = Id$ and $p(1) = W$. We can continually transition from the identity function to the $W$ transformation with the function $x \to p(t)x$
+(1) The linear transformation is, in fact, the hardest part. In order for this to be possible, we need $W$ to have a positive determinant. Our premise is that it isn't zero, and we can flip the sign if it is negative by switching two of the hidden neurons, so we can guarantee the determinant is positive. The space of positive determinant matrices is path-connected, so there exists $p: [0,1] \to GL_n(\mathbb{R})$ such that $p(0) = Id$ and $p(1) = W$. We can continually transition from the identity function to the $W$ transformation with the function $x \to p(t)x$
 (2) We can continually transition from the identity function to the b translation with the function $x \to x + tb$
 (3) We can continually transition from the identity function to the pointwise use of σ with the function: $x \to (1-t)x + tσ(x)$. ∎
 
-Homotopies are used in knot theory to study braids, links, and knots because a particular kind of homotopy, an ambient isotopy, demonstrates the equivalence of one of these to another. I imagine there is probably interest in programs automatically discovering such isotopies and automatically proving the equivalence of certain links, or that certain links are separable. It would be interesting to know if neural networks can beat whatever the state of the art is there.
+I imagine there is probably interest in programs automatically discovering such ambient isotopies and automatically proving the equivalence of certain links, or that certain links are separable. It would be interesting to know if neural networks can beat whatever the state of the art is there.
+
+*(Apparently determining if knots are trivial is NP. This doesn't bode well for neural networks.)*
+
+The sort of links we've talked about so far don't seem likely to turn up in real world data, but there are higher dimensional generalizations. It seems plausible such things could exist in real world data.
+
+Links and knots are $1$-dimensional manifolds, but you need 4 dimensions to be able to untangle all of them. Similarly, one can need yet higher dimensional space to be able to unknot $n$-dimensional manifolds. All $n$-dimensional manifolds can be untangled in $2n+2$ dimensions.[^isotopyver]
+
+[^isotopyver]: This result is mentioned in [Wikipedia's subsection on Isotopy versions](http://en.wikipedia.org/wiki/Whitney_embedding_theorem#Isotopy_versions).
+
+*(I know very little about knot theory and really need to learn more about what's known regarding dimensionality and links. If we know a manifold can be embedded in n-dimensional space, instead of the dimensionality of the manifold, what limit do we have?)*
 
 The Easy Way Out
 ----------------
 
 The natural thing for a neural net to do, the very easy route, is to try and pull the manifolds apart naively and stretch the parts that are tangled as thin as possible. While this won't be anywhere close to a genuine solution, it can achieve relatively low classification accuracy and be a tempting local minimum.
 
-It would present itself as very high derivatives on the regions it is trying to stretch, and sharp near-discontinuities. We know these things happen. Contractive penalties, penalizing the derivatives of the layers on data points, are the natural way to fight this.
+<div class="bigcenterimgcontainer">
+<img src="img/tangle.png" alt="" style="">
+</div>
+<div class="spaceafterimg"></div>
+
+It would present itself as very high derivatives on the regions it is trying to stretch, and sharp near-discontinuities. We know these things happen.[^discont] Contractive penalties, penalizing the derivatives of the layers at data points, are the natural way to fight this.[^contract]
+
+[^discont]: See [Szegedy *et al.*](http://cs.nyu.edu/~zaremba/docs/understanding.pdf), where they are able to construct take data samples and find slight modifications that cause some of the best image classification neural networks to misclasify the data. It's quite troubling.
+
+[^contract]: Contractive penalties were introduced in contractive autoencoders. See [Rifai *et al.* (2011)](http://www.iro.umontreal.ca/~lisa/pointeurs/ICML2011_explicit_invariance.pdf).
 
 Since these sort of local minima are absolutely useless from the perspective of trying to solve topological problems, topological problems may provide a nice motivation to explore fighting these issues.
+
+On the other hand, if we only care about achieving good classification results, it seems like we might not care. If a tiny bit of the data manifold is snagged on another manifold, is that a problem for us? It seems like we should be able to get arbitrarily good classification results despite this issue.
+
+*(My intuition is that trying to cheat the problem like this is a bad idea: it's hard to imagine that it won't be a dead end.)*
 
 Better Layers for Manipulating Manifolds?
 -----------------------------------------
@@ -265,7 +294,7 @@ And then deform space based on it:
 </div>
 <div class="spaceafterimg"></div>
 
-My intuition is that we should learn the vector field at fixed points (just take some fixed points from the training set to use as anchors) and interpolate in some manner. The vector field above is of the form:
+One could learn the vector field at fixed points (just take some fixed points from the training set to use as anchors) and interpolate in some manner. The vector field above is of the form:
 
 $$F(x) = \frac{v_0f_0(x) + v_1f_1(x)}{1+f_0(x)+f_1(x)}$$
 
@@ -274,7 +303,9 @@ Where $v_0$ and $v_1$ are vectors and $f_0(x)$ and $f_1(x)$ are n-dimensional ga
 K-Nearest Neighbor Layers
 -------------------------
 
-The more I think about it, the more persuaded I become that linear separability may be a huge, and possibly unreasonable amount to demand of a neural network. Really, the natural feeling thing would be to use nearest neighbors. However, one clearly needs a good representation before k-NN can work well.
+I've also begun to think that linear separability may be a huge, and possibly unreasonable amount to demand of a neural network. In some ways, it feels like the natural feeling thing to do would be to use [k-nearest neighbors](knn). However, one clearly needs a good representation before k-NN can work well.
+
+[knn]:http://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm
 
 As a first experiment, I trained some ~1% test error MNIST networks (two layer conv nets, no dropout). I then dropped the final softmax layer and used the k-NN algorithm. I was able to consistently achieve a reduction in test error of 0.1-0.2%.
 
@@ -282,11 +313,25 @@ Still, this doesn't quite feel like the right thing. The network is still trying
 
 k-NN is differentiable with respect to the representation it's acting on, because of the 1/distance weighting. As such, we can train a network directly for k-NN classification. This can be thought of as a kind of "nearest neighbor" layer that acts as an alternative to softmax.
 
-Clearly, we don't want to feedforward our entire training set for each mini-batch. I think a nice approach is to classify each element of the mini-batch based on the classes of other elements of the mini-batch, giving each one a weight of 1/(distance from classification target). (I used a slightly less elegant, but roughly equivalent algorithm because it was more practical to implement in Theano: feedforward two different batches at the same time, and classify them based on each other.)
+Clearly, we don't want to feedforward our entire training set for each mini-batch. I think a nice approach is to classify each element of the mini-batch based on the classes of other elements of the mini-batch, giving each one a weight of 1/(distance from classification target).[^modif]
+
+[^modif]: I used a slightly less elegant, but roughly equivalent algorithm because it was more practical to implement in Theano: feedforward two different batches at the same time, and classify them based on each other.
 
 Sadly, this only gets down to 5-4% test error. Though I've put very little effort into playing with hyper-parameters. Using simpler networks gets worse results.
 
-Still, I really aesthetically like this approach, because it seems like what we're "asking" the network to do is much more reasonable. We want points of the same manifold to be closer than points of others. This should correspond to inflating the space between manifolds for different datatypes and contracting the individual manifolds. It feels kind of like simplification. 
+Still, I really aesthetically like this approach, because it seems like what we're "asking" the network to do is much more reasonable. We want points of the same manifold to be closer than points of others. This should correspond to inflating the space between manifolds for different categories and contracting the individual manifolds. It feels kind of like simplification. 
 
+Conclusion
+-----------
 
+Topological properties of data, such as links, may make it impossible to linearly separate classes using low-dimensional networks, regardless of depth. Even in cases where it is technically possible, such as spirals, it can be very challenging to do so.
+
+To accurately classify data with neural networks, wide layers are sometimes necessary. Further, traditional neural network layers do not seem to be very good at representing important manipulations of manifolds. New layers, specifically motivated by the manifold perspective of machine learning, may be useful supplements.
+
+*(This is a developing research project. It's posted as an experiment in doing research openly. I would be delighted to have your feedback on these ideas: you can comment inline or at the end. For typos, technical errors, or clarifications you would like to see added, you are encouraged to make a pull request [on github](https://github.com/colah/NN-Topology-Post).)*
+
+Acknowledgments
+----------------
+
+Thank you to Yoshua Bengio, Michael Nielsen, Dario Amodei, Eliana Lorch, Jacob Steinhardt, and Tamsyn Waterhouse for their comments and encouragement.
 
