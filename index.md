@@ -1,6 +1,7 @@
 ---
 title: Neural Networks, Manifolds, and Topology
-date: 2014-03-25
+date: 2014-04-06
+published: true
 author: colah
 mathjax: on
 tags: topology, neural networks, deep learning, manifold hypothesis
