@@ -13,7 +13,7 @@ Recently, there's been a great deal of excitement and interest in deep neural ne
 
 However, there remain a number of concerns about them. One is that it can be quite challenging to understand *what* a neural network is really doing. If one trains it well, it achieves high quality results, but it is challenging to understand how it is doing so. If the network fails, it is hard to understand what went wrong.
 
-While it is challenging to understand the behavior of deep neural networks in general, it turns out to be much easier to explore low-dimensional deep neural networks -- networks that only have a few neurons in each layer. In fact, we can create visualizations to completely understand the behavior and training of such networks. This perspective will allow us to gain deeper intuition about the behavior of neural networks observe a connection linking neural networks to an area of mathematics called topology.
+While it is challenging to understand the behavior of deep neural networks in general, it turns out to be much easier to explore low-dimensional deep neural networks -- networks that only have a few neurons in each layer. In fact, we can create visualizations to completely understand the behavior and training of such networks. This perspective will allow us to gain deeper intuition about the behavior of neural networks and observe a connection linking neural networks to an area of mathematics called topology.
 
 A number of interesting things follow from this, including fundamental lower-bounds on the complexity of a neural network capable of classifying certain datasets.
 
@@ -75,9 +75,9 @@ In the approach outlined in the previous section, we learn to understand network
 
 The tricky part is in understanding how we go from one to another. Thankfully, neural network layers have nice properties that make this very easy.
 
-There are a variety of different kinds of layers used in neural networks. We will talk about tanh layers for a concrete example. A tanh layer $\tanh(Ax+b)$ consists of:
+There are a variety of different kinds of layers used in neural networks. We will talk about tanh layers for a concrete example. A tanh layer $\tanh(Wx+b)$ consists of:
 
-(1) A linear transformation by the matrix $A$
+(1) A linear transformation by the "weight" matrix $W$
 (2) A translation by the vector $b$
 (3) Point-wise application of tanh.
 
@@ -90,14 +90,14 @@ We can visualize this as a continuous transformation, as follows:
 
 The story is much the same for other standard layers, consisting of an affine transformation followed by pointwise application of a monotone activation function.
 
-We can apply this technique to understand more complicated networks. For example, the following network classifies two spirals that are slightly entangled, using four hidden layers.
+We can apply this technique to understand more complicated networks. For example, the following network classifies two spirals that are slightly entangled, using four hidden layers. Over time, we can see it shift from the "raw" representation to higher level ones it has learned in order to classify the data. While the spirals are originally entangled, by the end they are linearly separable. 
 
 <div class="centerimgcontainer">
 <img src="img/spiral.1-2.2-2-2-2-2-2.gif" alt="" style="">
 </div>
 <div class="spaceafterimg"></div>
 
-And the following network fails to classify two spirals that are more entangled, also using multiple layers.
+On the other hand, the following network, also using multiple layers, fails to classify two spirals that are more entangled.
 
 <div class="centerimgcontainer">
 <img src="img/spiral.2.2-2-2-2-2-2-2.gif" alt="" style="">
@@ -114,7 +114,7 @@ Each layer stretches and squishes space, but it never cuts, breaks, or folds it.
 
 Transformations like this, which don't affect topology, are called homeomorphisms. Formally, they are bijections that are continuous functions both ways.
 
-**Theorem**: Layers with $N$ inputs and $N$ outputs are homeomorphisms, if $W$ is non-singular. (Though one needs to be careful about domain and range.)
+**Theorem**: Layers with $N$ inputs and $N$ outputs are homeomorphisms, if the weight matrix, $W$, is non-singular. (Though one needs to be careful about domain and range.)
 
 **Proof**: Let's consider this step by step:
 
@@ -145,9 +145,9 @@ $$B = \{x | 2/3 < d(x,0) < 1\}$$
 
 **Claim**: It is impossible for a neural network to classify this dataset without having a layer that has 3 or more hidden units, regardless of depth.
 
-As mentioned previously, classification with a sigmoid unit or a softmax layer would be equivalent to trying to find a hyperplane (or in this case a line) that separates $A$ and $B$.
+As mentioned previously, classification with a sigmoid unit or a softmax layer is equivalent to trying to find a hyperplane (or in this case a line) that separates $A$ and $B$ in the final represenation. With only two hidden units, a network is topologically incapable of separating the data in this way, and doomed to failure on this dataset.
 
-Unfortunately, with only two hidden units, a network is topologically doomed to failure on this dataset. We can watch it struggle and try to learn a way to do this:
+In the following visualization, we observe a hidden representation while a network trains, along with the classification line. As we watch, it struggles and flounders trying to learn a way to do this.
 
 <div class="centerimgcontainer">
 <img src="img/topology_2D-2D_train.gif" alt="" style="">
@@ -155,7 +155,7 @@ Unfortunately, with only two hidden units, a network is topologically doomed to 
 </div>
 <div class="spaceafterimg"></div>
 
-(It's actually able to achieve $\sim 80\%$ classification accuracy.)
+In the end it gets pulled into a rather unproductive local minimum. Although, it's actually able to achieve $\sim 80\%$ classification accuracy.
 
 This example only had one hidden layer, but it would fail regardless.
 
@@ -183,7 +183,7 @@ $$A = [-\frac{1}{3}, \frac{1}{3}]$$
 
 $$B = [-1, -\frac{2}{3}] \cup [\frac{2}{3}, 1]$$
 
-Without using a layer of two or more hidden units, we can't classify this dataset. But if we use one with two units, we learn to represent the data as a nice curve that allows us to separate the data:
+Without using a layer of two or more hidden units, we can't classify this dataset. But if we use one with two units, we learn to represent the data as a nice curve that allows us to separate the classes with a line:
 
 <div class="centerimgcontainer">
 <img src="img/topology_1D-2D_train.gif" alt="" style="">
@@ -258,7 +258,7 @@ Links and knots are $1$-dimensional manifolds, but we need 4 dimensions to be ab
 The Easy Way Out
 ----------------
 
-The natural thing for a neural net to do, the very easy route, is to try and pull the manifolds apart naively and stretch the parts that are tangled as thin as possible. While this won't be anywhere close to a genuine solution, it can achieve relatively low classification accuracy and be a tempting local minimum.
+The natural thing for a neural net to do, the very easy route, is to try and pull the manifolds apart naively and stretch the parts that are tangled as thin as possible. While this won't be anywhere close to a genuine solution, it can achieve relatively high classification accuracy and be a tempting local minimum.
 
 <div class="bigcenterimgcontainer">
 <img src="img/tangle.png" alt="" style="">
@@ -275,7 +275,7 @@ Since these sort of local minima are absolutely useless from the perspective of 
 
 On the other hand, if we only care about achieving good classification results, it seems like we might not care. If a tiny bit of the data manifold is snagged on another manifold, is that a problem for us? It seems like we should be able to get arbitrarily good classification results despite this issue.
 
-*(My intuition is that trying to cheat the problem like this is a bad idea: it's hard to imagine that it won't be a dead end.)*
+*(My intuition is that trying to cheat the problem like this is a bad idea: it's hard to imagine that it won't be a dead end. In particular, in an optimization problem where local minima are a big problem, picking an architecture that can't genuinely solve the problem seems like a recipe for bad performance.)*
 
 Better Layers for Manipulating Manifolds?
 -----------------------------------------
