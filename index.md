@@ -27,7 +27,7 @@ Let's begin with a very simple dataset, two curves on a plane. The network will 
 </div>
 <div class="spaceafterimg"></div>
 
-The obvious way to visualize the behavior of a neural network -- or any machine learning algorithm, for that matter --'s behavior is to simply look at how it classifies every possible data point.
+The obvious way to visualize the behavior of a neural network -- or any classification algorithm, for that matter -- is to simply look at how it classifies every possible data point.
 
 We'll start with the simplest possible class of neural network, one with only an input layer and an output layer. Such a network simply tries to separate the two classes of data by dividing them with a line.
 
@@ -105,6 +105,8 @@ On the other hand, the following network, also using multiple layers, fails to c
 <div class="spaceafterimg"></div>
 
 It is worth explicitly noting here that these tasks are only somewhat challenging because we are using low-dimensional neural networks. If we were using wider networks, all this would be quite easy.
+
+*(Andrej Karpathy has made a [nice demo](http://cs.stanford.edu/people/karpathy/convnetjs//demo/classify2d.html) based on ConvnetJS that allows you to interactively explore networks with this sort of visualization of training!)*
 
 
 Topology of tanh Layers
